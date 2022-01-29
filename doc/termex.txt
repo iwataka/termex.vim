@@ -1,0 +1,75 @@
+*termex.txt* Extra terminal functionalities for Vim
+*termex*
+
+==============================================================================
+TOC                                                          *termex-contents*
+
+  INTRO .......................... |termex-intro|
+  USAGE .......................... |termex-usage|
+  OPTIONS ........................ |termex-options|
+  COMMANDS ....................... |termex-commands|
+
+==============================================================================
+INTRO                                                           *termex-intro*
+
+Extra terminal functionalities for Vim.
+
+This is a simple plugin including the following features.
+
+- Re-use existing terminals automatically
+- Open terminals in floating windows (if you like)
+
+==============================================================================
+USAGE                                                           *termex-usage*
+
+Just run :Terminal command to open terminal window (same as built-in terminal
+command). After closing it, you can re-open that terminal window by just
+running :Terminal command again.
+
+You can open terminal in neovim floatwin by the following setting.
+
+>
+    let g:termex_use_floatwin = v:true
+<
+
+==============================================================================
+OPTIONS                                                       *termex-options*
+                                                       *g:termex_open_command*
+>
+    let g:termex_open_command = '20sp'
+<
+
+termex.vim uses this value to open terminal windows if g:termex_use_floatwin
+is false. This option is passed to the *nvim_open_win()* function.
+
+------------------------------------------------------------------------------
+                                                       *g:termex_use_floatwin*
+>
+    let g:termex_use_floatwin = v:false
+<
+
+termex.vim opens terminal in floatwin if this value is true.
+
+------------------------------------------------------------------------------
+                                                 *g:termex_nvim_open_win_opts*
+
+>
+    let g:termex_nvim_open_win_opts = {}
+<
+
+termex.vim passes this value to *nvim_open_win()* and open terminal window if
+*g:termex_use_floatwin* is true.
+
+==============================================================================
+COMMAND                                                      *termex-commands*
+                                                            *termex-:Terminal*
+>
+    :Terminal(!) [cmd]
+<
+Open terminal window. Use $SHELL command if no cmd specified.
+By default, if existing terminal exists accroding to the specified cmd (or
+$SHELL), re-use it or create new terminal buffer.
+If trailing ! is added, force to create new terminal buffer.
+
+==============================================================================
+vim:ft=help:tw=78
