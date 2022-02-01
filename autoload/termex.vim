@@ -1,7 +1,4 @@
-let s:save_cpo = &cpoptions
-set cpoptions&vim
-
-fu! termex#terminal(force_new, cmd)
+fu! termex#terminal(force_new, cmd, use_floatwin) abort
   let cmd = a:cmd
   " use $SHELL if no command specified
   if empty(cmd)
@@ -10,11 +7,11 @@ fu! termex#terminal(force_new, cmd)
   let bufs = getbufinfo({'bufloaded': 1})
   let term_bufs = filter(bufs, printf("v:val.name =~ '\\vterm://(.{-}//(\\d+:)?)?\\V%s'", cmd))
   if empty(term_bufs) || a:force_new
-    if g:termex_use_floatwin && exists('*nvim_open_win')
+    if a:use_floatwin && exists('*nvim_open_win')
       let bufnr = bufadd(printf('term://%s', cmd))
       call nvim_buf_set_option(bufnr, 'buflisted', v:true)
       call bufload(bufnr)
-      call s:open_bufffer(bufnr)
+      call s:open_buffer(bufnr, a:use_floatwin)
     else
       exe printf('%s term://%s', g:termex_open_command, cmd)
     endif
@@ -24,12 +21,12 @@ fu! termex#terminal(force_new, cmd)
     if term_buf.bufnr == bufnr('%')
       return
     endif
-    call s:open_buffer(term_buf.bufnr)
+    call s:open_buffer(term_buf.bufnr, a:use_floatwin)
   endif
 endfu
 
-fu! s:open_buffer(bufnr)
-  if g:termex_use_floatwin && exists('*nvim_open_win')
+fu! s:open_buffer(bufnr, use_floatwin) abort
+  if a:use_floatwin && exists('*nvim_open_win')
     call s:nvim_open_win(a:bufnr)
   else
     let bufname = bufname(a:bufnr)
@@ -37,7 +34,7 @@ fu! s:open_buffer(bufnr)
   endif
 endfu
 
-fu! s:nvim_open_win(bufnr)
+fu! s:nvim_open_win(bufnr) abort
   let width = nvim_win_get_width(0)
   let height = nvim_win_get_height(0)
   let opts = {
@@ -58,6 +55,3 @@ fu! s:nvim_open_win(bufnr)
   endif
   call nvim_open_win(a:bufnr, 1, opts)
 endfu
-
-let &cpo = s:save_cpo
-unlet s:save_cpo
