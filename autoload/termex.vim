@@ -1,5 +1,5 @@
-fu! termex#terminal(force_new, cmd, use_floatwin) abort
-  let cmd = a:cmd
+fu! termex#terminal(force_new, exec_cmd, use_floatwin, open_cmd) abort
+  let cmd = a:exec_cmd
   " use $SHELL if no command specified
   if empty(cmd)
     let cmd = expand('$SHELL')
@@ -11,9 +11,9 @@ fu! termex#terminal(force_new, cmd, use_floatwin) abort
       let bufnr = bufadd(printf('term://%s', cmd))
       call nvim_buf_set_option(bufnr, 'buflisted', v:true)
       call bufload(bufnr)
-      call s:open_buffer(bufnr, a:use_floatwin)
+      call s:open_buffer(bufnr, a:use_floatwin, a:open_cmd)
     else
-      exe printf('%s term://%s', g:termex_open_command, cmd)
+      exe printf('%s term://%s', a:open_cmd, cmd)
     endif
   else
     let term_buf = term_bufs[0]
@@ -21,16 +21,16 @@ fu! termex#terminal(force_new, cmd, use_floatwin) abort
     if term_buf.bufnr == bufnr('%')
       return
     endif
-    call s:open_buffer(term_buf.bufnr, a:use_floatwin)
+    call s:open_buffer(term_buf.bufnr, a:use_floatwin, a:open_cmd)
   endif
 endfu
 
-fu! s:open_buffer(bufnr, use_floatwin) abort
+fu! s:open_buffer(bufnr, use_floatwin, open_cmd) abort
   if a:use_floatwin && exists('*nvim_open_win')
     call s:nvim_open_win(a:bufnr)
   else
     let bufname = bufname(a:bufnr)
-    exe printf('%s %s', g:termex_open_command, bufname)
+    exe printf('%s %s', a:open_cmd, bufname)
   endif
 endfu
 
