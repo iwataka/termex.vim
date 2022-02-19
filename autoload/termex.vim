@@ -1,3 +1,27 @@
+fu! termex#vsplit(force_new, exec_cmd, count) abort
+  call termex#terminal(a:force_new, a:exec_cmd, v:false, s:open_cmd('vsplit', a:count), {})
+endfu
+
+fu! termex#split(force_new, exec_cmd, count) abort
+  call termex#terminal(a:force_new, a:exec_cmd, v:false, s:open_cmd('split', a:count), {})
+endfu
+
+fu! s:open_cmd(exec_cmd, count) abort
+  if a:count == 0
+    return a:exec_cmd
+  else
+    return printf('%d%s', a:count, a:exec_cmd)
+  endif
+endfu
+
+fu! termex#edit(force_new, exec_cmd) abort
+  call termex#terminal(a:force_new, a:exec_cmd, v:false, 'edit')
+endfu
+
+fu! termex#float(force_new, exec_cmd) abort
+  call termex#terminal(a:force_new, a:exec_cmd, v:true, '')
+endfu
+
 fu! termex#terminal(force_new, exec_cmd, use_floatwin, open_cmd) abort
   let cmd = a:exec_cmd
   " use $SHELL if no command specified

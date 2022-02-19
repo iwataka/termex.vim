@@ -2,7 +2,7 @@
 *termex*
 
 ==============================================================================
-TOC                                                          *termex-contents*
+TOC                                                            *termex-contents*
 
   INTRO .......................... |termex-intro|
   USAGE .......................... |termex-usage|
@@ -10,48 +10,25 @@ TOC                                                          *termex-contents*
   COMMANDS ....................... |termex-commands|
 
 ==============================================================================
-INTRO                                                           *termex-intro*
+INTRO                                                             *termex-intro*
 
 Extra terminal functionalities for Vim.
 
 This is a simple plugin including the following features.
 
 - Re-use existing terminals automatically
-- Open terminals in floating windows (if you like)
+- Open terminals in splitted/vsplitted/floating windows
 
 ==============================================================================
-USAGE                                                           *termex-usage*
+USAGE                                                             *termex-usage*
 
-Just run :Terminal command to open terminal window (same as built-in terminal
-command). After closing it, you can re-open that terminal window by just
-running :Terminal command again.
-
-You can open terminal in neovim floatwin by the following setting.
-
->
-    let g:termex_use_floatwin = v:true
-<
+Just run :Term command to open terminal window.
+After closing it, you can re-open that terminal by just running :Term again.
+You can :STerm/:VTerm/:FTerm instead of :Term.
 
 ==============================================================================
-OPTIONS                                                       *termex-options*
-                                                       *g:termex_open_command*
->
-    let g:termex_open_command = '20sp'
-<
-
-termex.vim uses this value to open terminal windows if g:termex_use_floatwin
-is false. This option is passed to the *nvim_open_win()* function.
-
-------------------------------------------------------------------------------
-                                                       *g:termex_use_floatwin*
->
-    let g:termex_use_floatwin = v:false
-<
-
-termex.vim opens terminal in floatwin if this value is true.
-
-------------------------------------------------------------------------------
-                                                 *g:termex_nvim_open_win_opts*
+OPTIONS                                                         *termex-options*
+                                                   *g:termex_nvim_open_win_opts*
 
 >
     let g:termex_nvim_open_win_opts = {}
@@ -61,15 +38,38 @@ termex.vim passes this value to *nvim_open_win()* and open terminal window if
 *g:termex_use_floatwin* is true.
 
 ==============================================================================
-COMMAND                                                      *termex-commands*
-                                                            *termex-:Terminal*
+COMMAND                                                        *termex-commands*
+                                                                  *termex-:Term*
 >
-    :Terminal(!) [cmd]
+    :Term(!) [cmd]
 <
 Open terminal window. Use $SHELL command if no cmd specified.
 By default, if existing terminal exists accroding to the specified cmd (or
 $SHELL), re-use it or create new terminal buffer.
 If trailing ! is added, force to create new terminal buffer.
+
+------------------------------------------------------------------------------
+                                                                 *termex-:STerm*
+>
+    :[N]STerm(!) [cmd]
+<
+Same as :Term, but split window horizontally.
+You can specify window height by giving N.
+
+------------------------------------------------------------------------------
+                                                                 *termex-:VTerm*
+>
+    :[N]VTerm(!) [cmd]
+<
+Same as :Term, but split window vertically.
+You can specify window width by giving N.
+
+------------------------------------------------------------------------------
+                                                                 *termex-:FTerm*
+>
+    :FTerm(!) [cmd]
+<
+Same as :Term, but open terminal in floating window.
 
 ==============================================================================
 vim:ft=help:tw=78
