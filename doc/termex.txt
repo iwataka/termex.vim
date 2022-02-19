@@ -29,13 +29,23 @@ You can :STerm/:VTerm/:FTerm instead of :Term.
 ==============================================================================
 OPTIONS                                                         *termex-options*
                                                    *g:termex_nvim_open_win_opts*
-
 >
-    let g:termex_nvim_open_win_opts = {}
+    let g:termex_nvim_open_win_opts = {
+          \ 'relative': 'win',
+          \ 'width': {w -> float2nr(w*0.8)},
+          \ 'height': {h -> float2nr(h*0.8)},
+          \ 'col': {w -> float2nr(w*0.1)},
+          \ 'row': {h -> float2nr(h*0.1)},
+          \ 'anchor': 'NW',
+          \ 'style': 'minimal',
+          \ 'border': 'none',
+          \ }
 <
 
-termex.vim passes this value to *nvim_open_win()* and open terminal window if
-*g:termex_use_floatwin* is true.
+termex.vim passes this value to *nvim_open_win()* and open terminal window
+when running :FTerm.
+If width, height, col and/or row is funcref, value is automatically calculated
+by adding the current window width/height as an function argument.
 
 ==============================================================================
 COMMAND                                                        *termex-commands*
