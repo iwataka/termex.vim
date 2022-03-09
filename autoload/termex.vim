@@ -1,9 +1,9 @@
-fu! termex#vsplit(force_new, exec_cmd, count) abort
-  call termex#terminal(a:force_new, a:exec_cmd, v:false, s:open_cmd('vsplit', a:count), {})
+fu! termex#vsplit(force_new, exec_cmd, count, sync_cwd) abort
+  call termex#terminal(a:force_new, a:exec_cmd, v:false, s:open_cmd('vsplit', a:count), {}, a:sync_cwd)
 endfu
 
-fu! termex#split(force_new, exec_cmd, count) abort
-  call termex#terminal(a:force_new, a:exec_cmd, v:false, s:open_cmd('split', a:count), {})
+fu! termex#split(force_new, exec_cmd, count, sync_cwd) abort
+  call termex#terminal(a:force_new, a:exec_cmd, v:false, s:open_cmd('split', a:count), {}, a:sync_cwd)
 endfu
 
 fu! s:open_cmd(exec_cmd, count) abort
@@ -14,15 +14,15 @@ fu! s:open_cmd(exec_cmd, count) abort
   endif
 endfu
 
-fu! termex#edit(force_new, exec_cmd) abort
-  call termex#terminal(a:force_new, a:exec_cmd, v:false, 'edit', {})
+fu! termex#edit(force_new, exec_cmd, sync_cwd) abort
+  call termex#terminal(a:force_new, a:exec_cmd, v:false, 'edit', {}, a:sync_cwd)
 endfu
 
-fu! termex#float(force_new, exec_cmd, opts) abort
-  call termex#terminal(a:force_new, a:exec_cmd, v:true, 'edit', a:opts)
+fu! termex#float(force_new, exec_cmd, opts, sync_cwd) abort
+  call termex#terminal(a:force_new, a:exec_cmd, v:true, 'edit', a:opts, a:sync_cwd)
 endfu
 
-fu! termex#terminal(force_new, exec_cmd, use_floatwin, open_cmd, floatwin_opts) abort
+fu! termex#terminal(force_new, exec_cmd, use_floatwin, open_cmd, floatwin_opts, sync_cwd) abort
   if a:use_floatwin && !exists('*nvim_open_win')
     call s:warn("You're trying to termianl in floating window, but not supported")
   endif
@@ -49,6 +49,12 @@ fu! termex#terminal(force_new, exec_cmd, use_floatwin, open_cmd, floatwin_opts) 
       return
     endif
     call s:open_buffer(term_buf.bufnr, a:use_floatwin, a:open_cmd, a:floatwin_opts)
+  endif
+  if cmd == expand('$SHELL') && a:sync_cwd
+    augroup termex
+      autocmd!
+      autocmd BufEnter <buffer> call termex#sync_cwd()
+    augroup END
   endif
 endfu
 
@@ -89,3 +95,9 @@ endfu
 function! s:warn(msg) abort
   call s:echomsg('WarningMsg', a:msg)
 endfunction
+
+fu! termex#sync_cwd()
+  let cmd = printf("cd '%s'", getcwd())
+  let job_id = b:terminal_job_id
+  call chansend(job_id, printf("\<c-u>%s\<cr>", cmd))
+endfu
