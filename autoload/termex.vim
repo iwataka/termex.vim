@@ -26,6 +26,21 @@ fu! termex#terminal(force_new, exec_cmd, use_floatwin, open_cmd, floatwin_opts, 
   if a:use_floatwin && !exists('*nvim_open_win')
     call s:warn("You're trying to termianl in floating window, but not supported")
   endif
+  if a:exec_cmd == '?'
+    let cmd = s:select_terminal(a:use_floatwin, a:open_cmd, a:floatwin_opts, a:sync_cwd)
+  else
+    let cmd = s:open_terminal(a:force_new, a:exec_cmd, a:use_floatwin, a:open_cmd, a:floatwin_opts, a:sync_cwd)
+  endif
+  if cmd == expand('$SHELL') && a:sync_cwd
+    augroup termex
+      autocmd!
+      autocmd BufEnter <buffer> call termex#sync_cwd()
+    augroup END
+  endif
+endfu
+
+" Return an executed command
+fu! s:open_terminal(force_new, exec_cmd, use_floatwin, open_cmd, floatwin_opts, sync_cwd)
   let cmd = a:exec_cmd
   " use $SHELL if no command specified
   if empty(cmd)
@@ -46,16 +61,45 @@ fu! termex#terminal(force_new, exec_cmd, use_floatwin, open_cmd, floatwin_opts, 
     let term_buf = term_bufs[0]
     " if the target terminal is already opened, do nothing
     if term_buf.bufnr == bufnr('%')
-      return
+      return ''
     endif
     call s:open_buffer(term_buf.bufnr, a:use_floatwin, a:open_cmd, a:floatwin_opts)
   endif
-  if cmd == expand('$SHELL') && a:sync_cwd
-    augroup termex
-      autocmd!
-      autocmd BufEnter <buffer> call termex#sync_cwd()
-    augroup END
+  return cmd
+endfu
+
+" Return an executed command
+fu! s:select_terminal(use_floatwin, open_cmd, floatwin_opts, sync_cwd) abort
+  let term_bufs = getbufinfo({'bufloaded': 1})
+  let term_bufs = filter(term_bufs, "v:val.name =~ '\\vterm://(.{-}//(\\d+:)?)?.*'")
+  if len(term_bufs) == 0
+    " there's no terminal buffer yet
+    return ''
   endif
+  if len(term_bufs) == 1
+    " there's only one terminal buffer
+    let buf = term_bufs[0]
+  else
+    " there're multiple terminal buffers
+    let term_buf_names = map(term_bufs[:], 'v:val.name')
+    let input_cands = []
+    for i in range(len(term_buf_names))
+      call add(input_cands, printf("%d. %s", i + 1, term_buf_names[i]))
+    endfor
+    call inputsave()
+    let selected_cand = inputlist(["Select terminal:"] + input_cands)
+    call inputrestore()
+    if selected_cand == ""
+      return ''
+    endif
+    if len(term_bufs) < selected_cand
+      call s:warn(printf("Invalid input: %s", selected_cand))
+      return ''
+    endif
+    let buf = term_bufs[selected_cand - 1]
+  endif
+  call s:open_buffer(buf.bufnr, a:use_floatwin, a:open_cmd, a:floatwin_opts)
+  return substitute(buf.name, '\vterm://(.{-}//(\d+:)?)?(.*)', '\3', '')
 endfu
 
 fu! s:open_buffer(bufnr, use_floatwin, open_cmd, floatwin_opts) abort
@@ -92,9 +136,11 @@ fu! s:nvim_open_win(bufnr, opts) abort
   call nvim_open_win(a:bufnr, 1, opts)
 endfu
 
-function! s:warn(msg) abort
-  call s:echomsg('WarningMsg', a:msg)
-endfunction
+fu! s:warn(msg)
+  echohl WarningMsg
+  echo a:msg
+  echohl Normal
+endfu
 
 fu! termex#sync_cwd()
   let cmd = printf("cd '%s'", getcwd())
