@@ -20,6 +20,9 @@ endfu
 
 fu! termex#float(force_new, exec_cmd, opts, sync_cwd) abort
   call termex#terminal(a:force_new, a:exec_cmd, v:true, 'edit', a:opts, a:sync_cwd)
+  if has_key(g:, 'termex_winblend')
+    exe printf('setlocal winblend=%d', g:termex_winblend)
+  endif
 endfu
 
 fu! termex#terminal(force_new, exec_cmd, use_floatwin, open_cmd, floatwin_opts, sync_cwd) abort
@@ -40,7 +43,7 @@ fu! termex#terminal(force_new, exec_cmd, use_floatwin, open_cmd, floatwin_opts, 
 endfu
 
 " Return an executed command
-fu! s:open_terminal(force_new, exec_cmd, use_floatwin, open_cmd, floatwin_opts, sync_cwd)
+fu! s:open_terminal(force_new, exec_cmd, use_floatwin, open_cmd, floatwin_opts, sync_cwd) abort
   let cmd = a:exec_cmd
   " use $SHELL if no command specified
   if empty(cmd)
@@ -136,13 +139,13 @@ fu! s:nvim_open_win(bufnr, opts) abort
   call nvim_open_win(a:bufnr, 1, opts)
 endfu
 
-fu! s:warn(msg)
+fu! s:warn(msg) abort
   echohl WarningMsg
   echo a:msg
   echohl Normal
 endfu
 
-fu! termex#sync_cwd()
+fu! termex#sync_cwd() abort
   let cmd = printf("cd '%s'", getcwd())
   let job_id = b:terminal_job_id
   call chansend(job_id, printf("\<c-u>%s\<cr>", cmd))

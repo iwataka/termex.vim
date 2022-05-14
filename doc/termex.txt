@@ -47,6 +47,16 @@ when running :FTerm.
 If width, height, col and/or row is funcref, value is automatically calculated
 by adding the current window width/height as an function argument.
 
+------------------------------------------------------------------------------
+                                                             *g:termex_winblend*
+>
+        let g:termex_winblend = 10
+<
+
+This is not set by default.
+If you set this value, apply *winblend* settings to floating terminal.
+See *winblend* help for more details.
+
 ==============================================================================
 COMMAND                                                        *termex-commands*
                                                                   *termex-:Term*
