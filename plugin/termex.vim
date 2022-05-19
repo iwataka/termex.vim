@@ -22,10 +22,19 @@ if !exists('g:termex_sync_cwd')
 endif
 
 com! -nargs=* -bang -complete=shellcmd Term call
-      \ termex#edit(<bang>0, <q-args>, g:termex_sync_cwd)
+      \ termex#edit(<q-args>, <bang>0, g:termex_sync_cwd, v:false)
 com! -nargs=* -bang -complete=shellcmd -count STerm call
-      \ termex#split(<bang>0, <q-args>, <count>, g:termex_sync_cwd)
+      \ termex#split(<q-args>, <bang>0, g:termex_sync_cwd, v:false, <count>)
 com! -nargs=* -bang -complete=shellcmd -count VTerm call
-      \ termex#vsplit(<bang>0, <q-args>, <count>, g:termex_sync_cwd)
+      \ termex#vsplit(<q-args>, <bang>0, g:termex_sync_cwd, v:false, <count>)
 com! -nargs=* -bang -complete=shellcmd FTerm call
-      \ termex#float(<bang>0, <q-args>, g:termex_nvim_open_win_opts, g:termex_sync_cwd)
+      \ termex#float(<q-args>, <bang>0, g:termex_sync_cwd, v:false, g:termex_nvim_open_win_opts)
+
+com! -nargs=+ -complete=shellcmd Tui call
+      \ termex#edit(<q-args>, 1, 0, v:true)
+com! -nargs=+ -complete=shellcmd -count STui call
+      \ termex#split(<q-args>, 1, 0, v:true, <count>)
+com! -nargs=+ -complete=shellcmd -count VTui call
+      \ termex#vsplit(<q-args>, 1, 0, v:true, <count>)
+com! -nargs=+ -complete=shellcmd FTui call
+      \ termex#float(<q-args>, 1, 0, v:true, g:termex_nvim_open_win_opts)

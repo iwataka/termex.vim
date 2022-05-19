@@ -62,20 +62,16 @@ COMMAND                                                        *termex-commands*
                                                                   *termex-:Term*
 >
     :Term(!) [cmd]
-    :Term?
 <
 Open terminal window. Use $SHELL command if no cmd specified.
 By default, if existing terminal exists accroding to the specified cmd (or
 $SHELL), re-use it or create new terminal buffer.
 If trailing ! is added, force to create new terminal buffer.
-If trailing ? is added without cmd, it shows the prompt to select one of the
-opened terminal buffers.
 
 ------------------------------------------------------------------------------
                                                                  *termex-:STerm*
 >
     :[N]STerm(!) [cmd]
-    :[N]STerm?
 <
 Same as :Term, but split window horizontally.
 You can specify window height by giving N.
@@ -84,7 +80,6 @@ You can specify window height by giving N.
                                                                  *termex-:VTerm*
 >
     :[N]VTerm(!) [cmd]
-    :[N]VTerm?
 <
 Same as :Term, but split window vertically.
 You can specify window width by giving N.
@@ -93,9 +88,45 @@ You can specify window width by giving N.
                                                                  *termex-:FTerm*
 >
     :FTerm(!) [cmd]
-    :FTerm?
 <
 Same as :Term, but open terminal in floating window.
+
+------------------------------------------------------------------------------
+                                                                   *termex-:Tui*
+>
+    :Tui [cmd]
+<
+Almost same as :Term!, but following things are applied when entering
+terminal.
+
+1. Automatically enter into insert mode
+2. All terminal-mode mappings are cleared
+    - e.g. to prevent <esc> from returning to normal mode
+
+This command is mainly for Terminal UI tools such as lazygit.
+
+------------------------------------------------------------------------------
+                                                                  *termex-:STui*
+>
+    :[N]STui [cmd]
+<
+Same as :Tui, but split window horizontally.
+You can specify window height by giving N.
+
+------------------------------------------------------------------------------
+                                                                  *termex-:VTui*
+>
+    :[N]VTui [cmd]
+<
+Same as :Tui, but split window vertically.
+You can specify window width by giving N.
+
+------------------------------------------------------------------------------
+                                                                  *termex-:FTui*
+>
+    :FTui [cmd]
+<
+Same as :Tui, but open terminal in floating window.
 
 ==============================================================================
 vim:ft=help:tw=78

@@ -1,45 +1,98 @@
-fu! termex#vsplit(force_new, exec_cmd, count, sync_cwd) abort
-  call termex#terminal(a:force_new, a:exec_cmd, v:false, s:open_cmd('vsplit', a:count), {}, a:sync_cwd)
+fu! termex#vsplit(exec_cmd, force_new, sync_cwd, tui_mode, count) abort
+  call termex#terminal(
+        \ a:exec_cmd,
+        \ a:force_new,
+        \ s:open_cmd('vsplit', a:count),
+        \ v:false,
+        \ {},
+        \ a:sync_cwd,
+        \ a:tui_mode,
+        \ )
 endfu
 
-fu! termex#split(force_new, exec_cmd, count, sync_cwd) abort
-  call termex#terminal(a:force_new, a:exec_cmd, v:false, s:open_cmd('split', a:count), {}, a:sync_cwd)
+fu! termex#split(exec_cmd, force_new, sync_cwd, tui_mode, count) abort
+  call termex#terminal(
+        \ a:exec_cmd,
+        \ a:force_new,
+        \ s:open_cmd('split', a:count),
+        \ v:false,
+        \ {},
+        \ a:sync_cwd,
+        \ a:tui_mode,
+        \ )
 endfu
 
-fu! s:open_cmd(exec_cmd, count) abort
+fu! s:open_cmd(cmd, count) abort
   if a:count == 0
-    return a:exec_cmd
+    return a:cmd
   else
-    return printf('%d%s', a:count, a:exec_cmd)
+    return printf('%d%s', a:count, a:cmd)
   endif
 endfu
 
-fu! termex#edit(force_new, exec_cmd, sync_cwd) abort
-  call termex#terminal(a:force_new, a:exec_cmd, v:false, 'edit', {}, a:sync_cwd)
+fu! termex#edit(exec_cmd, force_new, sync_cwd, tui_mode) abort
+  call termex#terminal(
+        \ a:exec_cmd,
+        \ a:force_new,
+        \ 'edit',
+        \ v:false,
+        \ {},
+        \ a:sync_cwd,
+        \ a:tui_mode,
+        \ )
 endfu
 
-fu! termex#float(force_new, exec_cmd, opts, sync_cwd) abort
-  call termex#terminal(a:force_new, a:exec_cmd, v:true, 'edit', a:opts, a:sync_cwd)
+fu! termex#float(exec_cmd, force_new, sync_cwd, tui_mode, opts) abort
+  call termex#terminal(
+        \ a:exec_cmd,
+        \ a:force_new,
+        \ 'edit',
+        \ v:true,
+        \ a:opts,
+        \ a:sync_cwd,
+        \ a:tui_mode,
+        \ )
   if has_key(g:, 'termex_winblend')
     exe printf('setlocal winblend=%d', g:termex_winblend)
   endif
 endfu
 
-fu! termex#terminal(force_new, exec_cmd, use_floatwin, open_cmd, floatwin_opts, sync_cwd) abort
+fu! termex#terminal(exec_cmd, force_new, open_cmd, use_floatwin, floatwin_opts, sync_cwd, tui_mode) abort
   if a:use_floatwin && !exists('*nvim_open_win')
     call s:warn("You're trying to termianl in floating window, but not supported")
   endif
-  if a:exec_cmd == '?'
-    let cmd = s:select_terminal(a:use_floatwin, a:open_cmd, a:floatwin_opts, a:sync_cwd)
-  else
-    let cmd = s:open_terminal(a:force_new, a:exec_cmd, a:use_floatwin, a:open_cmd, a:floatwin_opts, a:sync_cwd)
-  endif
+  let cmd = s:open_terminal(a:force_new, a:exec_cmd, a:use_floatwin, a:open_cmd, a:floatwin_opts, a:sync_cwd)
   if cmd == expand('$SHELL') && a:sync_cwd
-    augroup termex
-      autocmd!
+    augroup termex_sync_cwd
+      autocmd! * <buffer>
       autocmd BufEnter <buffer> call termex#sync_cwd()
     augroup END
   endif
+  if a:tui_mode
+    startinsert
+    call s:clear_keymaps()
+  endif
+  augroup termex
+    autocmd! * <buffer>
+    autocmd TermClose <buffer> bwipeout
+  augroup END
+endfu
+
+fu! s:clear_keymaps() abort
+  if exists('*nvim_get_keymap')
+    let keymaps = nvim_get_keymap('t')
+    let keys = map(keymaps, 'v:val["lhs"]')
+  else
+    let cout = ""
+    redir => cout
+    silent execute 'tmap'
+    redir END
+    let keys = map(split(cout, "\n"), 'split(v:val)[1]')
+    echom keys
+  endif
+  for key in keys
+    exe printf('tnoremap <buffer> %s %s', key, key)
+  endfor
 endfu
 
 " Return an executed command
@@ -69,40 +122,6 @@ fu! s:open_terminal(force_new, exec_cmd, use_floatwin, open_cmd, floatwin_opts, 
     call s:open_buffer(term_buf.bufnr, a:use_floatwin, a:open_cmd, a:floatwin_opts)
   endif
   return cmd
-endfu
-
-" Return an executed command
-fu! s:select_terminal(use_floatwin, open_cmd, floatwin_opts, sync_cwd) abort
-  let term_bufs = getbufinfo({'bufloaded': 1})
-  let term_bufs = filter(term_bufs, "v:val.name =~ '\\vterm://(.{-}//(\\d+:)?)?.*'")
-  if len(term_bufs) == 0
-    " there's no terminal buffer yet
-    return ''
-  endif
-  if len(term_bufs) == 1
-    " there's only one terminal buffer
-    let buf = term_bufs[0]
-  else
-    " there're multiple terminal buffers
-    let term_buf_names = map(term_bufs[:], 'v:val.name')
-    let input_cands = []
-    for i in range(len(term_buf_names))
-      call add(input_cands, printf("%d. %s", i + 1, term_buf_names[i]))
-    endfor
-    call inputsave()
-    let selected_cand = inputlist(["Select terminal:"] + input_cands)
-    call inputrestore()
-    if selected_cand == ""
-      return ''
-    endif
-    if len(term_bufs) < selected_cand
-      call s:warn(printf("Invalid input: %s", selected_cand))
-      return ''
-    endif
-    let buf = term_bufs[selected_cand - 1]
-  endif
-  call s:open_buffer(buf.bufnr, a:use_floatwin, a:open_cmd, a:floatwin_opts)
-  return substitute(buf.name, '\vterm://(.{-}//(\d+:)?)?(.*)', '\3', '')
 endfu
 
 fu! s:open_buffer(bufnr, use_floatwin, open_cmd, floatwin_opts) abort
