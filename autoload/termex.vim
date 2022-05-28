@@ -72,10 +72,6 @@ fu! termex#terminal(exec_cmd, force_new, open_cmd, use_floatwin, floatwin_opts, 
     startinsert
     call s:clear_keymaps()
   endif
-  augroup termex
-    autocmd! * <buffer>
-    autocmd TermClose <buffer> bwipeout
-  augroup END
 endfu
 
 fu! s:clear_keymaps() abort
