@@ -130,26 +130,18 @@ fu! s:open_buffer(bufnr, use_floatwin, open_cmd, floatwin_opts) abort
 endfu
 
 fu! s:nvim_open_win(bufnr, opts) abort
-  let width = nvim_win_get_width(0)
-  let height = nvim_win_get_height(0)
-  let opts = a:opts
+  let opts = copy(a:opts)
   if type(opts['width']) == v:t_func
-    let opts['width'] = opts['width'](width)
+    let opts['width'] = opts['width'](&columns)
   endif
   if type(opts['height']) == v:t_func
-    let opts['height'] = opts['height'](height)
+    let opts['height'] = opts['height'](&lines)
   endif
   if type(opts['col']) == v:t_func
-    let opts['col'] = opts['col'](width)
+    let opts['col'] = opts['col'](&columns)
   endif
   if type(opts['row']) == v:t_func
-    let opts['row'] = opts['row'](height)
-  endif
-  " update according to user-defined options if possible
-  if has_key(g:, 'termex_nvim_open_win_opts')
-    for [key, value] in items(g:termex_nvim_open_win_opts)
-      let opts[key] = value
-    endfor
+    let opts['row'] = opts['row'](&lines)
   endif
   call nvim_open_win(a:bufnr, 1, opts)
 endfu

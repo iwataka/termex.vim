@@ -5,7 +5,7 @@ let g:loaded_termex = 1
 
 if !exists('g:termex_nvim_open_win_opts')
   let g:termex_nvim_open_win_opts = {
-        \ 'relative': 'win',
+        \ 'relative': 'editor',
         \ 'width': {w -> float2nr(w*0.8)},
         \ 'height': {h -> float2nr(h*0.8)},
         \ 'col': {w -> float2nr(w*0.1)},
