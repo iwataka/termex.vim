@@ -42,7 +42,7 @@ OPTIONS                                                         *termex-options*
           \ }
 <
 
-termex.vim passes this value to *nvim_open_win()* and open terminal window
+termex.vim passes this value to nvim_open_win() and open terminal window
 when running :FTerm.
 If width, height, col and/or row is funcref, value is automatically calculated
 by adding the current window width/height as an function argument.
